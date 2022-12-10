@@ -32,6 +32,29 @@ class AuthService {
     return user.user;
   }
 
+  Future sendEmailAndLink(String email) async {
+    return await _auth.sendSignInLinkToEmail(
+      email: email,
+      actionCodeSettings: ActionCodeSettings(
+        url: 'https://firebaseornek.page.link/',
+        handleCodeInApp: true,
+        iOSBundleId: 'com.kadriye.firebaseOrnek',
+        androidPackageName: 'com.kadriye.firebase_ornek',
+        androidInstallApp: true,
+        androidMinimumVersion: "1",
+      ),
+    );
+  }
+
+  Future<User?> signInWithEmailLink(String email, String link) async {
+    UserCredential user = await _auth.signInWithEmailLink(
+      email: email,
+      emailLink: link.toString(),
+    );
+
+    return user.user;
+  }
+
   //google ile giriş fonksiyonu
   Future<UserCredential> signInWithGoogle() async {
     final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();

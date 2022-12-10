@@ -4,13 +4,14 @@ import 'package:firebase_ornek/pages/register.dart';
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:firebase_dynamic_links/firebase_dynamic_links.dart';
 
 class LoginPage extends StatefulWidget {
   @override
   _LoginPageState createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
 
@@ -23,19 +24,26 @@ class _LoginPageState extends State<LoginPage> {
 
   Widget _buildBody() {
     return Center(
-      child: Padding(padding: const EdgeInsets.symmetric(horizontal: 10.0), child: _buildBodyContainer()),
+      child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 10.0),
+          child: _buildBodyContainer()),
     );
   }
 
   Widget _buildBodyContainer() {
     var size = MediaQuery.of(context).size;
     return Container(
-      height: size.height * .5,
+      height: size.height * .7,
       width: size.width * .85,
       decoration: BoxDecoration(
           color: Colors.blue.withOpacity(.75),
           borderRadius: BorderRadius.all(Radius.circular(20)),
-          boxShadow: [BoxShadow(color: Colors.grey.withOpacity(.75), blurRadius: 10, spreadRadius: 2)]),
+          boxShadow: [
+            BoxShadow(
+                color: Colors.grey.withOpacity(.75),
+                blurRadius: 10,
+                spreadRadius: 2)
+          ]),
       child: Padding(
         padding: const EdgeInsets.all(10.0),
         child: Center(
@@ -44,7 +52,7 @@ class _LoginPageState extends State<LoginPage> {
             children: [
               _buildTextFieldColumns(size),
               SizedBox(
-                height: size.height * 0.08,
+                height: size.height * .1,
               ),
               _buildButtonsColumn(size),
               _buildRegisterTextBody()
@@ -128,28 +136,54 @@ class _LoginPageState extends State<LoginPage> {
       children: [
         _buildLoginButton(),
         _buildSpace(size),
-        _buildLoginWithOtherButton(
-            'Google ile giriş', FontAwesomeIcons.google, Colors.red, _loginWithGoogleButtonFunction),
+        _buildLoginWithEmailButton(),
+        _buildSpace(size),
+        _buildLoginWithOtherButton('Google ile giriş', FontAwesomeIcons.google,
+            Colors.red, _loginWithGoogleButtonFunction),
         _buildSpace(size),
         _buildLoginWithOtherButton(
-            'Facebook ile giriş', FontAwesomeIcons.facebook, Colors.indigo, _loginWithFacebookButtonFunction),
+            'Facebook ile giriş',
+            FontAwesomeIcons.facebook,
+            Colors.indigo,
+            _loginWithFacebookButtonFunction),
         _buildSpace(size),
       ],
     );
   }
 
   Widget _buildLoginButton() {
-    return InkWell(onTap: () => _loginFunction(), child: _buildLoginButtonContainer());
+    return InkWell(
+        onTap: () => _loginFunction(), child: _buildLoginButtonContainer());
+  }
+
+  Widget _buildLoginWithEmailButton() {
+    return InkWell(
+        onTap: () => _loginWithEmailAndLink(),
+        child: _buildLoginButtonContainerEmail());
+  }
+
+  Widget _buildLoginButtonContainerEmail() {
+    return Container(
+      padding: EdgeInsets.symmetric(vertical: 5),
+      decoration: BoxDecoration(
+          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.all(Radius.circular(30))),
+      child: Padding(
+        padding: const EdgeInsets.all(5.0),
+        child: Center(child: _buildLoginButtonText()),
+      ),
+    );
   }
 
   Widget _buildLoginButtonContainer() {
     return Container(
       padding: EdgeInsets.symmetric(vertical: 5),
       decoration: BoxDecoration(
-          border: Border.all(color: Colors.white, width: 2), borderRadius: BorderRadius.all(Radius.circular(30))),
+          border: Border.all(color: Colors.white, width: 2),
+          borderRadius: BorderRadius.all(Radius.circular(30))),
       child: Padding(
         padding: const EdgeInsets.all(5.0),
-        child: Center(child: _buildLoginButtonText()),
+        child: Center(child: _buildLoginButtonTextEmail()),
       ),
     );
   }
@@ -164,9 +198,22 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  Widget _buildLoginButtonTextEmail() {
+    return Text(
+      "E-mail ile giriş yap",
+      style: TextStyle(
+        color: Colors.white,
+        fontSize: 20,
+      ),
+    );
+  }
+
   void _loginFunction() {
-    _authService.signIn(_emailController.text, _passwordController.text).then((value) {
-      return Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+    _authService
+        .signIn(_emailController.text, _passwordController.text)
+        .then((value) {
+      return Navigator.push(
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     }).catchError((dynamic error) {
       if (error.code.contains('invalid-email')) {
         _buildErrorMessage("Mail adresi geçersizdir");
@@ -195,7 +242,8 @@ class _LoginPageState extends State<LoginPage> {
         fontSize: 14);
   }
 
-  Widget _buildLoginWithOtherButton(String text, dynamic icon, dynamic color, Function function) {
+  Widget _buildLoginWithOtherButton(
+      String text, dynamic icon, dynamic color, Function function) {
     return InkWell(
       onTap: () => function(),
       child: Container(
@@ -214,13 +262,15 @@ class _LoginPageState extends State<LoginPage> {
 
   void _loginWithGoogleButtonFunction() async {
     return _authService.signInWithGoogle().then((value) {
-      return Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+      return Navigator.push(
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     });
   }
 
   void _loginWithFacebookButtonFunction() async {
     _authService.signInWithFacebook().then((value) {
-      return Navigator.push(context, MaterialPageRoute(builder: (context) => HomePage()));
+      return Navigator.push(
+          context, MaterialPageRoute(builder: (context) => HomePage()));
     });
   }
 
@@ -262,7 +312,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 
   void _registerFunction() {
-    Navigator.push(context, MaterialPageRoute(builder: (context) => RegisterPage()));
+    Navigator.push(
+        context, MaterialPageRoute(builder: (context) => RegisterPage()));
   }
 
   Widget _buildDivider() {
@@ -284,5 +335,40 @@ class _LoginPageState extends State<LoginPage> {
     return SizedBox(
       height: size.height * 0.02,
     );
+  }
+
+  void _loginWithEmailAndLink() async {
+    return _authService.sendEmailAndLink(_emailController.text);
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) async {
+    if (state == AppLifecycleState.resumed) {
+      final PendingDynamicLinkData? initialLink =
+          await FirebaseDynamicLinks.instance.getInitialLink();
+
+      // This link may exist if the app was opened fresh so we'll want to handle it the same way onLink will.
+      if (initialLink != null) {
+        handleLink(initialLink.link);
+      }
+
+      // This will handle incoming links if the application is already opened
+      FirebaseDynamicLinks.instance.onLink.listen((dynamicLinkData) {
+        handleLink(dynamicLinkData.link);
+      }).onError((error) {
+        // Handle errors
+      });
+    }
+  }
+
+  void handleLink(Uri link) async {
+    _authService
+        .signInWithEmailLink(_emailController.text, link.data.toString())
+        .then((value) {
+      if (value != null) {
+        Navigator.push(
+            context, MaterialPageRoute(builder: (context) => HomePage()));
+      }
+    });
   }
 }
